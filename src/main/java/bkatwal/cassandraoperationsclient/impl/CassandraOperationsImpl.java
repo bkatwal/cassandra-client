@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /** @author "Bikas Katwal" 26/08/18 */
 public class CassandraOperationsImpl implements CassandraOperations {
@@ -41,12 +42,10 @@ public class CassandraOperationsImpl implements CassandraOperations {
 
   private int readTimeoutInSeconds;
 
-  private static int successCount;
-
   // this will shared across threads
   private static List<ResultSetFuture> tasks = new LinkedList<>();
 
-  private static final String ID_S = "id";
+  private final String ID_S = "id";
 
   public CassandraOperationsImpl(
       final String host, final int port, final int updateSize, final int readTimeoutInSeconds) {
@@ -97,19 +96,24 @@ public class CassandraOperationsImpl implements CassandraOperations {
           continue;
         }
 
-        for (ResultSetFuture t : tasks) {
-          t.getUninterruptibly(readTimeoutInSeconds, TimeUnit.SECONDS);
-        }
-        tasks.clear();
+        processFutures();
       }
       if (!tasks.isEmpty()) {
-        for (ResultSetFuture t : tasks) {
-          t.getUninterruptibly(readTimeoutInSeconds, TimeUnit.SECONDS);
-        }
+        processFutures();
       }
     } catch (Exception e) {
       throw new CassandraOperationException("Failed to do async save to cassandra.", e);
     }
+  }
+
+  private void processFutures() throws TimeoutException {
+
+    for (ResultSetFuture resultSetFuture : tasks) {
+      if (!resultSetFuture.isDone()) {
+        resultSetFuture.getUninterruptibly(readTimeoutInSeconds, TimeUnit.SECONDS);
+      }
+    }
+    tasks.clear();
   }
 
   @Override
@@ -196,7 +200,7 @@ public class CassandraOperationsImpl implements CassandraOperations {
 
     @Override
     public void onSuccess(ResultSet result) {
-      //Log here
+      // Log here
     }
 
     @Override

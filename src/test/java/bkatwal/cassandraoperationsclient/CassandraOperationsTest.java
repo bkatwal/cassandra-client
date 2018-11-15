@@ -145,7 +145,7 @@ public class CassandraOperationsTest {
   public void getByTokenRangeTest() {
     loadTestData();
     List<Object[]> tokenRanges =
-        CassandraConnectorUtil.getTokenRangesAcrossNodes(host, port, keySpace, null, null);
+        CassandraConnectorUtil.getTokenRangesAcrossNodes(host, port, null, null);
 
     List<Map<String, Object>> records = new ArrayList<>();
     for (Object[] tokenRange : tokenRanges) {
