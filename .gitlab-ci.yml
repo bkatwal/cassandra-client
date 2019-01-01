@@ -2,18 +2,13 @@ image: maven:3-jdk-9
 
 stages:
   - build
-  - test
   - run
 
 build:
   stage: build
   script:
     - mvn compile
-
-test:
-  stage: test
-  script:
-    - mvn test
+# TODO add test
 
 run:
   stage: run
