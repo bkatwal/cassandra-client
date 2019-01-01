@@ -13,4 +13,4 @@ build:
 run:
   stage: run
   script:
-    - mvn install
+    - mvn install -DskipTests
